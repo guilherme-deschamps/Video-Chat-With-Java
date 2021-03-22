@@ -13,7 +13,8 @@ import javax.swing.SwingConstants;
 
 public class Server extends JFrame {
 
-	private JPanel contentPane;
+	private JPanel contentPane; 
+	public static JLabel img_server;
 	
 	/**
 	 * Launch the application.
@@ -33,16 +34,15 @@ public class Server extends JFrame {
 			System.out.println("Connected!");
 			ObjectInputStream objInput = new ObjectInputStream(s.getInputStream());
 			ImageIcon icon;
-			while(true) {
-				icon       = (ImageIcon) objInput.readObject();
-				img_server.setIcon(icon); 
-			}
+				while(true) {
+					icon       = (ImageIcon) objInput.readObject();
+					img_server.setIcon(icon); 
+				}
 			} catch (Exception e) {
-			e.printStackTrace();
-		}
+				e.printStackTrace();
+			}
 	}
 
-	public static JLabel img_server;
 	/** 
 	 * Create the frame.
 	 */

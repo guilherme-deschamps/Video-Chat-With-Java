@@ -1,8 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.ObjectInputStream;
+import java.awt.image.BufferedImage; 
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -27,8 +25,8 @@ public class Client extends JFrame {
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() { 
-					Client frame = new Client();
-					frame.setVisible(true);  
+				Client frame = new Client();
+				frame.setVisible(true);  
 			}
 		});
 
@@ -38,16 +36,14 @@ public class Client extends JFrame {
 			ImageIcon icon;
 			BufferedImage bImage;
 			Webcam cam = Webcam.getDefault();
-			cam.open();
-			
-			while(true) { 
-				bImage = cam.getImage();
-				icon   = new ImageIcon(bImage);
-				output.writeObject(icon);
-				output.flush();
-				img_client.setIcon(icon);
-			}
-			
+			cam.open(); 
+				while(true) { 
+					bImage = cam.getImage();
+					icon   = new ImageIcon(bImage);
+					output.writeObject(icon);
+					output.flush();
+					img_client.setIcon(icon);
+				} 
 			} catch (Exception e) {
 			e.printStackTrace();
 		}

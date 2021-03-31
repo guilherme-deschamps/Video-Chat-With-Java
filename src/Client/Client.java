@@ -57,6 +57,26 @@ public class Client extends Thread {
 
                 List<String> currentServerIps = readIpsList(input);
                 Collections.sort(currentServerIps);
+                if (!currentServerIps.equals(ips)) {
+                    List<String> ipsLeft = new ArrayList<>();
+                    for (String ip : ips) {
+                        if (!currentServerIps.contains(ip)) {
+                            ipsLeft.add(ip);
+                        }
+                    }
+
+                    List<String> newIps = new ArrayList<>();
+                    for (String ip : currentServerIps) {
+                        if (!ips.contains(ip)) {
+                            newIps.add(ip);
+                        }
+                    }
+
+                    removeIpsLeft(ipsLeft);
+                    createThreadsForNewIps(newIps);
+
+                    ips = currentServerIps;
+                }
             }
 
             threads.forEach(ClientThread::stopRunning);
@@ -79,16 +99,26 @@ public class Client extends Thread {
         });
     }
 
+    private void removeIpsLeft(List<String> ipsLeft) {
+        List<ClientThread> threadsToRemove = new ArrayList<>();
 
-        img_client = new JLabel("Client");
-        img_client.setHorizontalAlignment(SwingConstants.CENTER);
-        contentPane.add(img_client, BorderLayout.CENTER);
+        for (String ip : ipsLeft) {
+            for (ClientThread t : threads) {
+                if (t.getIp().equals(ip)) {
+                    threadsToRemove.add(t);
+                    t.stopRunning();
+                }
+                break;
+            }
+        }
+
+        threads.removeAll(threadsToRemove);
     }
 
-    private static void enviaImagemProsClientes(List<String> ips) throws IOException {
-        for(String ip : ips){
+    private void createThreadsForNewIps(List<String> newIps) {
+        for (String ip : newIps) {
             ClientThread thread = new ClientThread(ip);
-            thread.start();
+            thread.run();
             threads.add(thread);
         }
     }

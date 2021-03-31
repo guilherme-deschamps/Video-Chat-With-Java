@@ -43,4 +43,28 @@ public class ClientThread extends JFrame implements Runnable {
 
     }
 
+    private void receiveImage(ObjectInputStream inputImage) {
+        try {
+            icon = (ImageIcon) inputImage.readObject();
+            img_client_thread.setIcon(icon);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void stopRunning() {
+        this.running = false;
+    }
+
+    private void sendImage(Webcam cam, ObjectOutputStream output) throws IOException {
+        bImage = cam.getImage();
+        icon = new ImageIcon(bImage);
+        output.writeObject(icon);
+        output.flush();
+    }
+
 }

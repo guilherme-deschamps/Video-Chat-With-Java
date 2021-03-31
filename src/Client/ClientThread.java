@@ -3,12 +3,16 @@ package Client;
 import com.github.sarxos.webcam.Webcam;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClientThread extends Thread {
+public class ClientThread extends JFrame implements Runnable {
 
     private String ip;
 

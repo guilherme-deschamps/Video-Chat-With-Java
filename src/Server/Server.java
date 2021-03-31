@@ -42,10 +42,19 @@ public class Server extends Thread {
                     case Operations.DISCONNECTING:
                         break;
                     case Operations.UPDATE_IPS:
-                        clients.remove(ip);
+                        String removedIp = "";
+
+                        for (String c : clients) {
+                            if (c.contains(ip)) {
+                                removedIp = c;
+                                break;
+                            }
+                        }
+                        clients.remove(removedIp);
+
                         output.writeObject(clients);
                         output.flush();
-                        clients.add(ip);
+                        clients.add(removedIp);
                         break;
                     default:
                         if (commandType.contains(Operations.CONNECTING)) {

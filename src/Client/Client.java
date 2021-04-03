@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +38,11 @@ public class Client extends Thread {
         try {
             Socket socket = new Socket(serverIp, serverPort);
             ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 
             output.writeUTF(Operations.CONNECTING + ":" + port);
             output.flush();
 
+            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
             List<String> ips = readIpsList(input);
             Collections.sort(ips);
 
@@ -50,11 +51,18 @@ public class Client extends Thread {
             enviaImagemProsClientes(ips);
 
             while (running) {
-                Thread.sleep(5000);
-                
+
+                input.close();
+                output.close();
+                socket.close();
+
+                socket = new Socket(serverIp, serverPort);
+                output = new ObjectOutputStream(socket.getOutputStream());
+
                 output.writeUTF(Operations.UPDATE_IPS);
                 output.flush();
 
+                input = new ObjectInputStream(socket.getInputStream());
                 List<String> currentServerIps = readIpsList(input);
                 Collections.sort(currentServerIps);
                 if (!currentServerIps.equals(ips)) {
@@ -77,7 +85,13 @@ public class Client extends Thread {
 
                     ips = currentServerIps;
                 }
+
+                Thread.sleep(500);
             }
+
+            output.close();
+            input.close();
+            socket.close();
 
             threads.forEach(ClientThread::stopRunning);
         } catch (Exception e) {

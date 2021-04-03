@@ -34,10 +34,10 @@ public class Server extends Thread {
                 System.out.println("Connected!");
 
                 ObjectInputStream input = new ObjectInputStream(s.getInputStream());
-                ObjectOutputStream output = new ObjectOutputStream(s.getOutputStream());
                 String commandType = input.readUTF();
                 String ip = s.getLocalAddress().getHostAddress();
 
+                ObjectOutputStream output = new ObjectOutputStream(s.getOutputStream());
                 switch (commandType) {
                     case Operations.DISCONNECTING:
                         break;
@@ -52,7 +52,7 @@ public class Server extends Thread {
                         }
                         clients.remove(removedIp);
 
-                        output.writeObject(clients);
+                        output.writeUTF(new ObjectMapper().writeValueAsString(clients));
                         output.flush();
                         clients.add(removedIp);
                         break;
@@ -67,6 +67,8 @@ public class Server extends Thread {
                             throw new IOException("Connection refused! Try again");
                         }
                 }
+                input.close();
+                output.close();
                 s.close();
 
                 System.out.println("Waiting..");

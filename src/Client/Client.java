@@ -28,7 +28,7 @@ public class Client extends Thread {
     @Override
     public void run() {
         System.out.println("IP recebido no cliente: " + serverIp);
-        System.out.println("Porta recebida no cliente: " + serverPort);
+        System.out.println("Porta recebida no cliente: " + clientPort);
 
         connectClient();
     }
@@ -39,7 +39,7 @@ public class Client extends Thread {
             Socket socket = new Socket(serverIp, serverPort);
             List<String> ips = connectClientToServer(socket);
 
-            ips.forEach(i -> System.out.println("IP: " + i));
+            //ips.forEach(i -> System.out.println("IP: " + i));
 
             List<ClientThread> threads = criaThreadsParaClientes(ips);
             ClientServerSocketThread clientServerThread = new ClientServerSocketThread(clientPort, serverIp, serverPort, threads);
@@ -48,7 +48,7 @@ public class Client extends Thread {
             while (running) {
 
                 socket.getInputStream().close();
-//                socket.getOutputStream().close();
+                //socket.getOutputStream().close();
                 socket.close();
 
                 socket = new Socket(serverIp, serverPort);
@@ -106,6 +106,7 @@ public class Client extends Thread {
         List<ClientThread> threads = new ArrayList<>();
 
         for (String ip : ips) {
+            System.out.println("Novo cliente conectando-se em: "+socketUtils.getIp()+": "+ Integer.parseInt(ip.split(":")[1]));
             Socket socket = new Socket(socketUtils.getIp(), Integer.parseInt(ip.split(":")[1]));
             sendConnectingMessage(socket, Operations.CONNECTING);
             int receivedPort = socket.getInputStream().read();

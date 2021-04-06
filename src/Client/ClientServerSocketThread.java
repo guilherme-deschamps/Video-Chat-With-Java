@@ -24,10 +24,10 @@ public class ClientServerSocketThread extends Thread {
     public void run() {
         try {
             ServerSocket serverSocket = new ServerSocket(port);
-            System.out.println("Waiting at " + serverIp + ":" + port);
+            System.out.println("ClienteServer Waiting at " + serverIp + ":" + port);
 
             Socket socket = serverSocket.accept();
-            System.out.println("Connected!");
+            System.out.println("Connected at ClienteServer!");
 
             ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
             while (true) {

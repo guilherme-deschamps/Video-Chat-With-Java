@@ -61,7 +61,7 @@ public class ClientThread extends JFrame implements Runnable {
                 socket = new Socket(socketUtils.getIp(), socketPort);
             }
 
-            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+            ObjectOutputStream output    = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream inputImage = new ObjectInputStream(socket.getInputStream());
 
             Webcam cam = Webcam.getDefault();

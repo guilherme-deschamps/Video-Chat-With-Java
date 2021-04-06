@@ -14,6 +14,7 @@ public class Server extends Thread {
     private List<String> clients = new ArrayList<>();
     private int port;
     private ServerSocket serverSocket;
+    private int currentClientThreadPort = 1;
 
     public Server(int serverPort) {
         this.port = serverPort;
@@ -55,6 +56,11 @@ public class Server extends Thread {
                         output.writeUTF(new ObjectMapper().writeValueAsString(clients));
                         output.flush();
                         clients.add(removedIp);
+                        break;
+                    case Operations.GET_CLIENT_THREAD_PORT:
+                        output.write(7900 + currentClientThreadPort);
+                        output.flush();
+                        currentClientThreadPort++;
                         break;
                     default:
                         if (commandType.contains(Operations.CONNECTING)) {

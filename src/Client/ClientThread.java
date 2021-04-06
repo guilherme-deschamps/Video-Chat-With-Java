@@ -1,5 +1,6 @@
 package Client;
 
+import Utils.SocketUtils;
 import com.github.sarxos.webcam.Webcam;
 
 import javax.swing.*;
@@ -14,15 +15,18 @@ import java.net.Socket;
 
 public class ClientThread extends JFrame implements Runnable {
 
-    private String ip;
+    private SocketUtils socketUtils = SocketUtils.getInstance();
+    private int port;
+    private Integer socketPort;
     private boolean running;
     private BufferedImage bImage;
     private ImageIcon icon;
     private JPanel contentPane;
     public static JLabel img_client_thread;
 
-    public ClientThread(String ip) {
-        this.ip = ip;
+    public ClientThread(int port, Integer socketPort) {
+        this.port = port;
+        this.socketPort = socketPort;
 
         EventQueue.invokeLater(() -> {
             ClientThread frame = new ClientThread();
@@ -38,7 +42,7 @@ public class ClientThread extends JFrame implements Runnable {
         contentPane.setLayout(new BorderLayout(0, 0));
         setContentPane(contentPane);
 
-        img_client_thread = new JLabel("Client Thread IP: " + ip);
+        img_client_thread = new JLabel("Client Thread IP: " + socketUtils.getIp());
         img_client_thread.setHorizontalAlignment(SwingConstants.CENTER);
         contentPane.add(img_client_thread, BorderLayout.CENTER);
     }
@@ -46,13 +50,19 @@ public class ClientThread extends JFrame implements Runnable {
     @Override
     public void run() {
         running = true;
-        try {
-            Socket outputSocket = new Socket(ip.split(":")[0], Integer.parseInt(ip.split(":")[1]));
-            ObjectOutputStream output = new ObjectOutputStream(outputSocket.getOutputStream());
 
-            ServerSocket inputServerSocket = new ServerSocket(7800);
-            Socket inputSocket = inputServerSocket.accept();
-            ObjectInputStream inputImage = new ObjectInputStream(inputSocket.getInputStream());
+        try {
+
+            Socket socket;
+            if (socketPort == null) {
+                ServerSocket serverSocket = new ServerSocket(port);
+                socket = serverSocket.accept();
+            } else {
+                socket = new Socket(socketUtils.getIp(), socketPort);
+            }
+
+            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inputImage = new ObjectInputStream(socket.getInputStream());
 
             Webcam cam = Webcam.getDefault();
             cam.open();
@@ -75,8 +85,8 @@ public class ClientThread extends JFrame implements Runnable {
         }
     }
 
-    public String getIp() {
-        return ip;
+    public int getPort() {
+        return port;
     }
 
     public void stopRunning() {

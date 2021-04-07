@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 public class Server extends Thread {
 
@@ -32,7 +33,6 @@ public class Server extends Thread {
 
             while (true) {
                 Socket s = serverSocket.accept();
-                System.out.println("Connected!");
 
                 ObjectInputStream input = new ObjectInputStream(s.getInputStream());
                 String commandType = input.readUTF();
@@ -58,7 +58,7 @@ public class Server extends Thread {
                         clients.add(removedIp);
                         break;
                     case Operations.GET_CLIENT_THREAD_PORT:
-                        output.write(7900 + currentClientThreadPort);
+                        output.writeInt(7900 + currentClientThreadPort);
                         output.flush();
                         currentClientThreadPort++;
                         break;
@@ -76,8 +76,6 @@ public class Server extends Thread {
                 input.close();
                 output.close();
                 s.close();
-
-                System.out.println("Waiting..");
             }
 
         } catch (Exception e) {

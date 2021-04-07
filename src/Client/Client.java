@@ -3,14 +3,13 @@ package Client;
 import Utils.Operations;
 import Utils.SocketUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class Client extends Thread {
 
@@ -27,7 +26,6 @@ public class Client extends Thread {
 
     @Override
     public void run() {
-        System.out.println("IP recebido no cliente: " + serverIp);
         System.out.println("Porta recebida no cliente: " + clientPort);
 
         connectClient();
@@ -39,8 +37,6 @@ public class Client extends Thread {
             Socket socket = new Socket(serverIp, serverPort);
             List<String> ips = connectClientToServer(socket);
 
-            //ips.forEach(i -> System.out.println("IP: " + i));
-
             List<ClientThread> threads = criaThreadsParaClientes(ips);
             ClientServerSocketThread clientServerThread = new ClientServerSocketThread(clientPort, serverIp, serverPort, threads);
             clientServerThread.start();
@@ -48,11 +44,10 @@ public class Client extends Thread {
             while (running) {
 
                 socket.getInputStream().close();
-                //socket.getOutputStream().close();
                 socket.close();
 
                 socket = new Socket(serverIp, serverPort);
-                sendConnectingMessage(socket, Operations.UPDATE_IPS);
+                socketUtils.sendServerMessage(socket, Operations.UPDATE_IPS, clientPort);
 
                 ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
                 List<String> currentServerIps = socketUtils.readSocketResponse(input, new TypeReference<List<String>>() {
@@ -66,20 +61,10 @@ public class Client extends Thread {
                         }
                     }
 
-//                    List<String> newIps = new ArrayList<>();
-//                    for (String ip : currentServerIps) {
-//                        if (!ips.contains(ip)) {
-//                            newIps.add(ip);
-//                        }
-//                    }
-
-//                    removeIpsLeft(ipsLeft);
-//                    createThreadsForNewIps(newIps);
-
                     ips = currentServerIps;
                 }
 
-                Thread.sleep(2000);
+                Thread.sleep(new Random().nextInt(3000) + 1000);
             }
 
             socket.getOutputStream().close();
@@ -93,7 +78,7 @@ public class Client extends Thread {
     }
 
     private List<String> connectClientToServer(Socket socket) throws IOException {
-        sendConnectingMessage(socket, Operations.CONNECTING + ":" + clientPort);
+        socketUtils.sendServerMessage(socket, Operations.CONNECTING + ":" + clientPort, clientPort);
 
         List<String> ips = socketUtils.readSocketResponse(new ObjectInputStream(socket.getInputStream()),
                 new TypeReference<List<String>>() {
@@ -106,20 +91,19 @@ public class Client extends Thread {
         List<ClientThread> threads = new ArrayList<>();
 
         for (String ip : ips) {
-            System.out.println("Novo cliente conectando-se em: "+socketUtils.getIp()+": "+ Integer.parseInt(ip.split(":")[1]));
             Socket socket = new Socket(socketUtils.getIp(), Integer.parseInt(ip.split(":")[1]));
-            sendConnectingMessage(socket, Operations.CONNECTING);
-            int receivedPort = socket.getInputStream().read();
+            socketUtils.sendThreadMessage(socket, Operations.CONNECTING, clientPort);
+            int receivedPort = new ObjectInputStream(socket.getInputStream()).readInt();
             socket.getOutputStream().close();
-            socket.getInputStream().close();
 
             Socket socketServer = new Socket(serverIp, serverPort);
-            socketUtils.sendSocketMessage(socketServer, Operations.GET_CLIENT_THREAD_PORT);
+            socketUtils.sendServerMessage(socketServer, Operations.GET_CLIENT_THREAD_PORT, clientPort);
             int port = socketUtils.readPortFromSocketResponse(new ObjectInputStream(socketServer.getInputStream()));
 
-            ClientThread thread = new ClientThread(port, receivedPort);
-            thread.run();
-            threads.add(thread);
+            ClientThread clientThread = new ClientThread(port, receivedPort);
+            Thread thread = new Thread(clientThread);
+            thread.start();
+            threads.add(clientThread);
         }
 
         return threads;
@@ -128,7 +112,7 @@ public class Client extends Thread {
 //    private void createThreadsForNewIps(List<String> newIps) throws IOException {
 //        for (String ip : newIps) {
 //            Socket socket = new Socket(ip.split(":")[0], Integer.parseInt(ip.split(":")[1]));
-//            sendConnectingMessage(socket, Operations.CONNECTING);
+//            socketUtils.sendSocketMessage(socket, Operations.CONNECTING);
 //            int receivedPort = socket.getInputStream().read();
 //            socket.getOutputStream().close();
 //            socket.getInputStream().close();
